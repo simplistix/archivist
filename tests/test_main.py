@@ -1,6 +1,7 @@
 from unittest import TestCase
 from testfixtures import Replacer, tempdir, compare, ShouldRaise, OutputCapture
-from archivist.main import parse_command_line
+from archivist.config import ConfigError
+from archivist.main import parse_command_line, HandleKnownExceptions
 
 
 class TestParseCommandLine(TestCase):
@@ -25,3 +26,23 @@ class TestParseCommandLine(TestCase):
                 self.check([path])
         self.assertTrue("can't open" in output.captured)
         self.assertTrue(path in output.captured)
+
+class TestHandleKnownExceptions(TestCase):
+
+    def test_config_error(self):
+        with ShouldRaise(SystemExit(1)):
+            with OutputCapture() as output:
+                with HandleKnownExceptions():
+                    raise ConfigError('foo', dict(x=1, y=2))
+        # when the exception isn't caught, nothing should be printed
+        output.compare('ConfigError: foo: \n'
+                       'x: 1\n'
+                       'y: 2\n')
+
+    def test_value_error(self):
+        with ShouldRaise(ValueError('foo')):
+            with OutputCapture() as output:
+                with HandleKnownExceptions():
+                    raise ValueError('foo')
+        # when the exception isn't caught, nothing should be printed
+        output.compare('')
