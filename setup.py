@@ -35,6 +35,7 @@ setup(
     install_requires=[
         'pyyaml',
         'dulwich'
+        'voluptuous',
     ],
     extras_require=dict(
         test=[
