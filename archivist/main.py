@@ -1,11 +1,15 @@
 from argparse import ArgumentParser, FileType
 
-from .config import Config, ConfigError
+from .config import Config, ConfigError, default_repo_config
+
+
 def parse_command_line():
     parser = ArgumentParser()
     parser.add_argument('config',
                         help='Absolute path to the yaml config file',
-                        type=FileType('r'))
+                        default=default_repo_config['path']+'/config.yaml',
+                        type=FileType('r'),
+                        nargs='?')
     args = parser.parse_args()
     return args
 

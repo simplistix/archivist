@@ -1,5 +1,7 @@
 from unittest import TestCase
+
 from testfixtures import Replacer, tempdir, compare, ShouldRaise, OutputCapture
+
 from archivist.config import ConfigError
 from archivist.main import parse_command_line, HandleKnownExceptions
 
@@ -17,7 +19,6 @@ class TestParseCommandLine(TestCase):
         args = self.check([path])
         compare('foo', args.config.read())
 
-
     @tempdir()
     def test_not_okay(self, dir):
         path = dir.getpath('bad.yaml')
@@ -26,6 +27,15 @@ class TestParseCommandLine(TestCase):
                 self.check([path])
         self.assertTrue("can't open" in output.captured)
         self.assertTrue(path in output.captured)
+
+    @tempdir()
+    def test_default(self, dir):
+        dir.write('config.yaml', 'foo')
+        with Replacer() as r:
+            r.replace('archivist.config.default_repo_config.path', dir.path)
+            args = self.check([])
+        compare('foo', args.config.read())
+
 
 class TestHandleKnownExceptions(TestCase):
 
