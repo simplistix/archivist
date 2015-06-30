@@ -76,9 +76,13 @@ plugin_schema = Any(
     {Required('type'): str, Extra: object}
 )
 
+repo_schema =  {Required('type'): str,
+                Required('name'): str,
+                Extra: object}
+
 schema = Schema({
     Required('repos',
-             default=[default_repo_config]): [plugin_schema],
+             default=[default_repo_config]): [repo_schema],
     Required('sources'): All([plugin_schema], Length(1)),
     Required('notifications',
              default=[default_notifications_config]): [plugin_schema],

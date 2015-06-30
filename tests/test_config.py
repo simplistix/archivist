@@ -138,6 +138,21 @@ sources:
                 ]
             ))
 
+    def test_repo_missing_name(self):
+        self.check_config_error(
+            """
+repos:
+  - git: foo
+
+sources:
+- path: /some/path
+""",
+            '''\
+at ['repos', 0], required key not provided, 'name':
+git: foo
+at ['repos', 0], required key not provided, 'type':
+git: foo''')
+
     def test_no_sources(self):
         self.check_config_error(
             """
