@@ -76,9 +76,9 @@ plugin_schema = Any(
     {Required('type'): str, Extra: object}
 )
 
-repo_schema =  {Required('type'): str,
-                Required('name'): str,
-                Extra: object}
+repo_schema = {Required('type'): str,
+               Required('name'): str,
+               Extra: object}
 
 schema = Schema({
     Required('repos',
@@ -115,6 +115,27 @@ class Config(object):
                     values[index] = dict(type=key, value=value)
         return data
 
+    @staticmethod
+    def check_source_repos(data):
+        repo_names = set(config['name'] for config in data['repos'])
+        for config in data['sources']:
+            if 'repo' in config:
+                if config['repo'] not in repo_names:
+                    raise ConfigError(
+                        'source specifies invalid repo {!r}'.format(config['repo']),
+                        config
+                    )
+            else:
+                repo = default_repo_config['name']
+                if repo not in repo_names:
+                    raise ConfigError(
+                        'source specifies no repo and the default repo, '
+                        '{!r}, is not configured'.format(repo),
+                        config
+                    )
+                config['repo'] = default_repo_config['name']
+        return data
+
     @classmethod
     def parse(cls, source):
         """
@@ -124,4 +145,5 @@ class Config(object):
         raw = yaml.load(source)
         data = cls.check_schema(raw)
         data = cls.normalise_plugin_config(data)
+        data = cls.check_source_repos(data)
         return data

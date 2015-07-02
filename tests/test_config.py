@@ -1,7 +1,9 @@
 from unittest import TestCase
 from testfixtures import TempDirectory, compare, ShouldRaise
-from archivist.config import Config, ConfigError, default_repo_config, \
+from archivist.config import (
+    Config, ConfigError, default_repo_config,
     default_notifications_config
+)
 
 
 class TestParse(TestCase):
@@ -44,9 +46,10 @@ notifications:
                 dict(name='config', type='git')
             ],
             sources=[
-                dict(type='path', value='/some/path'),
-                dict(type='crontab', value='root'),
-                dict(type='jenkins', username='foo', password='bar'),
+                dict(type='path', value='/some/path', repo='config'),
+                dict(type='crontab', value='root', repo='config'),
+                dict(type='jenkins', username='foo', password='bar',
+                     repo='config'),
             ],
             notifications=[
                 dict(type='email', value='test@example.com')
@@ -134,7 +137,7 @@ sources:
                 ],
                 repos=[default_repo_config],
                 sources=[
-                    dict(type='some', value='thing')
+                    dict(type='some', value='thing', repo='config')
                 ]
             ))
 
@@ -208,6 +211,36 @@ baz: bob
 foo: bar
 ''')
 
+    def test_source_repo_not_valid(self):
+        # not a mapping
+        self.check_config_error(
+            """
+sources:
+- type: bar
+  repo: baz
+""",
+            '''\
+source specifies invalid repo 'baz':
+repo: baz
+type: bar
+''')
+
+    def test_default_repo_not_valid(self):
+        # not a mapping
+        self.check_config_error(
+            """
+repos:
+  - name: not_config
+    type: git
+sources:
+  - x: y
+""",
+            '''\
+source specifies no repo and the default repo, 'config', is not configured:
+type: x
+value: y
+''')
+
     def test_invalid_notifications(self):
         # not list
         self.check_config_error(
@@ -249,6 +282,6 @@ sources:
                 notifications=[default_notifications_config],
                 repos=[default_repo_config],
                 sources=[
-                    dict(type='some', value='thing')
+                    dict(type='some', value='thing', repo='config')
                 ]
             ))
