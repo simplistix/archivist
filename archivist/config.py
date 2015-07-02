@@ -2,6 +2,7 @@ from voluptuous import (
     Schema, Required, MultipleInvalid, Length, All, Any, Extra
 )
 import yaml
+from archivist.plugins import Repo, Notifier, Source
 
 
 class ConfigError(Exception):
@@ -97,7 +98,7 @@ class Config(object):
         self.notifications = []
 
     @staticmethod
-    def check_schema(raw):
+    def check_schema(raw, schema=schema):
         try:
             return schema(raw)
         except MultipleInvalid as e:
@@ -147,3 +148,53 @@ class Config(object):
         data = cls.normalise_plugin_config(data)
         data = cls.check_source_repos(data)
         return data
+
+    @staticmethod
+    def load_plugin(plugins, type_, name, config, abc):
+        try:
+            plugin_class = plugins.get(type_, name)
+        except KeyError:
+            raise ConfigError(
+                'No plugin found for {} of type {!r}'.format(
+                    type_, name
+                ),
+                config
+            )
+        if not issubclass(plugin_class, abc):
+            raise TypeError('{} is not a {}'.format(
+                plugin_class, abc
+            ))
+        return plugin_class
+
+    @classmethod
+    def realise(cls, config_data, plugins):
+        """
+        Turns a config dict and a plugin registry into a fully
+        formed :class:`Config`.
+        Raises a :class:`ConfigError` if the plugins can't be found.
+        """
+        config = Config()
+        for plugin_type_p, plugin_abc in (
+                ('repos', Repo),
+                ('sources', Source),
+                ('notifications', Notifier)
+        ):
+            plugin_type = plugin_type_p[:-1]
+            for plugin_config in config_data[plugin_type_p]:
+                plugin_name = plugin_config['type']
+
+                plugin_class = cls.load_plugin(plugins,
+                                               plugin_type, plugin_name,
+                                               plugin_config, plugin_abc)
+
+                cls.check_schema(plugin_config, plugin_class.schema)
+
+                plugin = plugin_class(**plugin_config)
+                store = getattr(config, plugin_type_p)
+                if plugin_type_p == 'repos':
+                    store[plugin_config['name']] = plugin
+                else:
+                    store.append(plugin)
+
+        return config
+
