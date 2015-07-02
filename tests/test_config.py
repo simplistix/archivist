@@ -9,14 +9,16 @@ from archivist.plugins import (
     Plugins, Repo, Source, Notifier
 )
 
-
-class TestParse(TestCase):
+class WithTempDir(object):
 
     def setUp(self):
         self.dir = TempDirectory()
 
     def tearDown(self):
         self.dir.cleanup()
+
+
+class TestParse(WithTempDir, TestCase):
 
     def check_config_error(self, text, expected):
         source = open(self.dir.write('test.yaml', text))
@@ -400,3 +402,60 @@ bar
                 config.sources)
         compare([C(DummyNotifier, z=3, type='baz')],
                 config.notifications)
+
+
+class TestLoad(WithTempDir, TestCase):
+
+    def test_full_instantiation(self):
+        # one of each
+        class DummyGit(Repo):
+            schema = Schema({}, extra=ALLOW_EXTRA)
+            def __init__(self, type, name):
+                super(DummyGit, self).__init__(type, name)
+            def actions(self):
+                pass
+            def path_for(self, source):
+                pass
+
+        class DummyPath(Source):
+            schema = Schema({}, extra=ALLOW_EXTRA)
+            def __init__(self, type, repo, value):
+                super(DummyPath, self).__init__(type, repo)
+            def process(self, path):
+                pass
+
+        class DummyEmail(Notifier):
+            schema = Schema({}, extra=ALLOW_EXTRA)
+            def __init__(self, type, value):
+                super(DummyEmail, self).__init__(type)
+            def start(self):
+                pass
+            def finish(self):
+                pass
+
+        plugins = Plugins()
+        plugins.register('repo', 'git', DummyGit)
+        plugins.register('source', 'path', DummyPath)
+        plugins.register('notification', 'email', DummyEmail)
+
+        source = open(self.dir.write('test.yaml', """
+repos:
+  - name: config
+    type: git
+
+sources:
+- path: /some/path
+
+notifications:
+- email: test@example.com
+"""))
+        config = Config.load(source, plugins)
+        compare(
+            C(Config,
+              repos=dict(config=C(DummyGit, type='git', name='config')),
+              sources=[C(DummyPath, type='path', repo='config')],
+              notifications=[
+                  C(DummyEmail, type='email')
+              ]),
+            config
+        )

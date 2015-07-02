@@ -198,3 +198,10 @@ class Config(object):
 
         return config
 
+    @classmethod
+    def load(cls, source, plugins):
+        """
+        Create a :class:`Config` from a source file object and a
+        :class:`Plugins` registry.
+        """
+        return cls.realise(cls.parse(source), plugins)
