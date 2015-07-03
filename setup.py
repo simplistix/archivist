@@ -1,7 +1,7 @@
 # See license.txt for license details.
 # Copyright (c) 2015 Simplistix Ltd
 
-import os, sys
+import os
 
 from setuptools import setup, find_packages
 
@@ -14,8 +14,8 @@ setup(
     author_email='chris@simplistix.co.uk',
     license='MIT',
     description=(
-        "A tool for checking versions of packages used by conda or pip "
-        "are as specified in their requirements files."
+        "A plugable tool for comparing configuration with a known "
+        "configuration stored in a source control system."
     ),
     #long_description=open(os.path.join(base_dir,'docs','description.rst')).read(),
     url='https://github.com/Simplistix/archivist',
@@ -25,9 +25,9 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
+        # 'Programming Language :: Python :: 3',
+        # 'Programming Language :: Python :: 3.3',
+        # 'Programming Language :: Python :: 3.4',
     ],
     packages=find_packages(),
     zip_safe=False,
@@ -44,7 +44,7 @@ setup(
             'nose-cov',
             'mock'
             ],
-        build=['sphinx', 'pkginfo', 'setuptools-git', 'twine']
+        build=['sphinx', 'pkginfo', 'setuptools-git', 'twine', 'wheel']
     ),
     entry_points = {
         'console_scripts': [
