@@ -205,3 +205,6 @@ class Config(object):
         :class:`Plugins` registry.
         """
         return cls.realise(cls.parse(source), plugins)
+
+    def repo_for(self, source):
+        return self.repos[source.repo]

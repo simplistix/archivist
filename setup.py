@@ -42,6 +42,7 @@ setup(
             'testfixtures',
             'nose',
             'nose-cov',
+            'mock'
             ],
         build=['sphinx', 'pkginfo', 'setuptools-git', 'twine']
     ),
