@@ -9,14 +9,17 @@ class Plugins(object):
     def __init__(self):
         self.plugins = defaultdict(dict)
 
-    def load(self):
+    @classmethod
+    def load(cls):
         """
         Load plugins from entrypoints specified in packages and register them
         """
+        plugins = Plugins()
         for type in 'notification', 'repo', 'source':
             for entrypoint in iter_entry_points(group='archivist.'+type):
                 plugin = entrypoint.load()
-                self.register(type, entrypoint.name, plugin)
+                plugins.register(type, entrypoint.name, plugin)
+        return plugins
 
     def register(self, type, name, plugin):
         "Register an individual plugin"

@@ -26,11 +26,10 @@ class TestPluginLoading(TestCase):
         self.entry_points = defaultdict(list)
 
     def load_plugins(self):
-        plugins = Plugins()
         with Replacer() as r:
             r.replace('archivist.plugins.iter_entry_points',
                       self.mock_iter_entry_points)
-            plugins.load()
+            plugins = Plugins.load()
         return plugins
 
     def test_no_plugins(self):
