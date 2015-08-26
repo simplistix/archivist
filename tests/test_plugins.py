@@ -1,8 +1,10 @@
 from collections import defaultdict
 from unittest import TestCase
-from pkg_resources import EntryPoint
+
 from testfixtures import ShouldRaise, Replacer, compare
+
 from archivist.plugins import Plugins
+
 
 plugin1 = object()
 plugin2 = object()
