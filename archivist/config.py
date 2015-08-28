@@ -110,15 +110,23 @@ class Config(object):
     @staticmethod
     def normalise_plugin_config(data):
         """
-        Turn ``{'foo': 'bar'}`` into ``{'type': 'foo', 'name': 'bar'}``
-        and ``{'type': 'foo', 'value': 'bar'}`` into
-        ``{'type': 'foo', 'value': 'bar', 'name': None}``
+        Config transformations:
+        - ``{'foo': 'bar'}`` to ``{'type': 'foo', 'name': 'bar'}``
+        - ``{'type': 'foo', 'value': 'bar'}`` to
+          ``{'type': 'foo', 'value': 'bar', 'name': None}``
+        - ``{'foo': ['bar', 'baz']}`` to
+          ``{type: 'foo', 'name': None, 'value':['bar', 'baz']}``
         """
         for values in data.values():
             for index, value in enumerate(values):
                 if len(value) == 1:
                     key, value = value.items()[0]
-                    values[index] = value = dict(type=key, name=value)
+                    values[index] = new_value = dict(type=key)
+                    if isinstance(value, str):
+                        new_value['name']=value
+                    else:
+                        new_value['values']=value
+                    value = new_value
                 if 'name' not in value:
                     value['name'] = None
         return data

@@ -9,6 +9,31 @@ from archivist.plugins import (
     Plugins, Repo, Source, Notifier
 )
 
+
+def config(item):
+    return dict(test=[item])
+
+class TestNormalisation(TestCase):
+
+    def test_key_value_to_type_name(self):
+        compare(config({'type': 'foo', 'name': 'bar'}),
+                Config.normalise_plugin_config(
+                    config({'foo': 'bar'})
+                ))
+
+    def test_no_name(self):
+        compare(config({'type': 'foo', 'value': 'bar', 'name': None}),
+                Config.normalise_plugin_config(
+                    config({'type': 'foo', 'value': 'bar'})
+                ))
+
+    def test_list_value(self):
+        compare(config({'type': 'foo', 'name': None, 'values':['bar', 'baz']}),
+                Config.normalise_plugin_config(
+                    config({'foo': ['bar', 'baz']})
+                ))
+
+
 class WithTempDir(object):
 
     def setUp(self):
@@ -302,6 +327,22 @@ type: source_type
 value: thing
 ''')
 
+    def test_source_list_value(self):
+        self.check_parses(
+            """
+sources:
+- paths:
+  - /foo
+  - /bar
+""",
+            dict(
+                notifications=[default_notifications_config],
+                repos=[default_repo_config],
+                sources=[
+                    dict(type='paths', name=None, repo='config',
+                         values=['/foo', '/bar']),
+                ]
+            ))
 
     def test_invalid_notifications(self):
         # not list
