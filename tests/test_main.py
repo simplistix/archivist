@@ -73,7 +73,6 @@ class TestMain(TestCase):
             schema = Schema({}, extra=ALLOW_EXTRA)
             def __init__(self, **kw):
                 getattr(m, self.__class__.__name__)(**kw)
-                self.value = kw.pop('value', None)
                 super(MockPluginInit, self).__init__(**kw)
 
         class TestRepo(MockPluginInit, Repo):
@@ -82,7 +81,7 @@ class TestMain(TestCase):
             def path_for(self, source):
                 source_type = source.__class__.__name__
                 getattr(m.TestRepo, self.name).path_for(source_type)
-                return '/tmp/'+ self.name + '/' + source_type
+                return '/tmp/' + self.name + '/' + source_type
 
         class TestS1(MockPluginInit, Source):
             def process(self, path):
@@ -92,9 +91,9 @@ class TestMain(TestCase):
 
         class TestNotifier(MockPluginInit, Notifier):
             def start(self):
-                m.TestNotifier.start(self.value)
+                m.TestNotifier.start(self.name)
             def finish(self):
-                m.TestNotifier.finish(self.value)
+                m.TestNotifier.finish(self.name)
 
         def load_plugins(cls):
             registry = cls()
@@ -130,10 +129,10 @@ notifications:
         compare([
             call.TestRepo(type='test', name='r1'),
             call.TestRepo(type='test', name='r2'),
-            call.TestS1(repo='r1', type='test1'),
-            call.TestS2(repo='r2', type='test2'),
-            call.TestNotifier(type='test', value='t1'),
-            call.TestNotifier(type='test', value='t2'),
+            call.TestS1(repo='r1', type='test1', name=None),
+            call.TestS2(repo='r2', type='test2', name=None),
+            call.TestNotifier(type='test', name='t1'),
+            call.TestNotifier(type='test', name='t2'),
             call.TestNotifier.start('t1'),
             call.TestNotifier.start('t2'),
             call.TestRepo.r1.path_for('TestS1'),

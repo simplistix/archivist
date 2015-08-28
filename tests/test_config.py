@@ -52,13 +52,13 @@ notifications:
                 dict(name='config', type='git')
             ],
             sources=[
-                dict(type='path', value='/some/path', repo='config'),
-                dict(type='crontab', value='root', repo='config'),
+                dict(type='path', name='/some/path', repo='config'),
+                dict(type='crontab', name='root', repo='config'),
                 dict(type='jenkins', username='foo', password='bar',
-                     repo='config'),
+                     repo='config', name=None),
             ],
             notifications=[
-                dict(type='email', value='test@example.com')
+                dict(type='email', name='test@example.com')
             ],
         ))
 
@@ -139,11 +139,11 @@ sources:
 """,
             dict(
                 notifications=[
-                    dict(type='some', value='thing')
+                    dict(type='some', name='thing')
                 ],
                 repos=[default_repo_config],
                 sources=[
-                    dict(type='some', value='thing', repo='config')
+                    dict(type='some', name='thing', repo='config')
                 ]
             ))
 
@@ -227,6 +227,7 @@ sources:
 """,
             '''\
 source specifies invalid repo 'baz':
+name: null
 repo: baz
 type: bar
 ''')
@@ -243,9 +244,64 @@ sources:
 """,
             '''\
 source specifies no repo and the default repo, 'config', is not configured:
+name: y
 type: x
-value: y
 ''')
+
+    def test_duplicate_source_names(self):
+        self.check_config_error(
+            """
+sources:
+- type: source_type
+  name: thing
+
+- type: source_type
+  name: thing
+""",
+            '''\
+more than one source of type 'source_type' named 'thing':
+name: thing
+repo: config
+type: source_type
+''')
+
+    def test_duplicate_source_names_but_different_types(self):
+        self.check_parses(
+            """
+sources:
+- type: type1
+  name: thing
+
+- type: type2
+  name: thing
+""",
+            dict(
+                notifications=[default_notifications_config],
+                repos=[default_repo_config],
+                sources=[
+                    dict(type='type1', name='thing', repo='config'),
+                    dict(type='type2', name='thing', repo='config'),
+                ]
+            ))
+
+    def test_duplicate_sources_named_none(self):
+        self.check_config_error(
+            """
+sources:
+- type: source_type
+  value: thing
+
+- type: source_type
+  value: thing
+""",
+            '''\
+more than one source of type 'source_type' named None:
+name: null
+repo: config
+type: source_type
+value: thing
+''')
+
 
     def test_invalid_notifications(self):
         # not list
@@ -288,7 +344,7 @@ sources:
                 notifications=[default_notifications_config],
                 repos=[default_repo_config],
                 sources=[
-                    dict(type='some', value='thing', repo='config')
+                    dict(type='some', name='thing', repo='config')
                 ]
             ))
 
@@ -370,16 +426,16 @@ bar
 
         class DummySource(Source):
             schema = Schema({}, extra=ALLOW_EXTRA)
-            def __init__(self, type, repo, y):
-                super(DummySource, self).__init__(type, repo)
+            def __init__(self, type, name, repo, y):
+                super(DummySource, self).__init__(type, name, repo)
                 self.y = y
             def process(self, path):
                 pass
 
         class DummyNotifier(Notifier):
             schema = Schema({}, extra=ALLOW_EXTRA)
-            def __init__(self, type, z):
-                super(DummyNotifier, self).__init__(type)
+            def __init__(self, type, name, z):
+                super(DummyNotifier, self).__init__(type, name)
                 self.z = z
             def start(self):
                 pass
@@ -392,15 +448,17 @@ bar
         plugins.register('notification', 'baz', DummyNotifier)
 
         config = Config.realise(dict(repos=[dict(type='foo', name='po', x=1)],
-                                     sources=[dict(type='bar', y=2, repo='po')],
-                                     notifications=[dict(type='baz', z=3)]),
+                                     sources=[dict(type='bar', y=2, repo='po',
+                                                   name=None)],
+                                     notifications=[dict(type='baz', z=3,
+                                                         name=None)]),
                                 plugins)
 
         compare({'po': C(DummyRepo, type='foo', name='po', x=1)},
                 config.repos)
-        compare([C(DummySource, y=2, type='bar', repo='po')],
+        compare([C(DummySource, y=2, type='bar', repo='po', name=None)],
                 config.sources)
-        compare([C(DummyNotifier, z=3, type='baz')],
+        compare([C(DummyNotifier, z=3, type='baz', name=None)],
                 config.notifications)
 
 
@@ -419,15 +477,15 @@ class TestLoad(WithTempDir, TestCase):
 
         class DummyPath(Source):
             schema = Schema({}, extra=ALLOW_EXTRA)
-            def __init__(self, type, repo, value):
-                super(DummyPath, self).__init__(type, repo)
+            def __init__(self, type, name, repo):
+                super(DummyPath, self).__init__(type, name, repo)
             def process(self, path):
                 pass
 
         class DummyEmail(Notifier):
             schema = Schema({}, extra=ALLOW_EXTRA)
-            def __init__(self, type, value):
-                super(DummyEmail, self).__init__(type)
+            def __init__(self, type, name):
+                super(DummyEmail, self).__init__(type, name)
             def start(self):
                 pass
             def finish(self):
@@ -453,9 +511,10 @@ notifications:
         compare(
             C(Config,
               repos=dict(config=C(DummyGit, type='git', name='config')),
-              sources=[C(DummyPath, type='path', repo='config')],
+              sources=[C(DummyPath,
+                         type='path', repo='config', name='/some/path')],
               notifications=[
-                  C(DummyEmail, type='email')
+                  C(DummyEmail, type='email', name='test@example.com')
               ]),
             config
         )

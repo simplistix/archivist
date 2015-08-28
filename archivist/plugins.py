@@ -46,26 +46,18 @@ class Plugin(object):
         """
 
     @abstractmethod
-    def __init__(self, type, **config):
+    def __init__(self, type, name, **config):
         """
         :param type: string name of the type of plugin this is.
+        :param name: string name of this plugin, which may be ``None``.
         :param config: a dict containing the config for this instance
                        of the plugin.
         """
         self.type = type
+        self.name = name
 
 
 class Repo(Plugin):
-
-    @abstractmethod
-    def __init__(self, type, name, **config):
-        """
-        :param type: string name of the type of plugin this is.
-        :param config: a dict containing the config for this instance
-                       of the plugin.
-        """
-        super(Repo, self).__init__(type)
-        self.name = name
 
     @abstractmethod
     def path_for(self, source):
@@ -89,13 +81,14 @@ class Repo(Plugin):
 class Source(Plugin):
 
     @abstractmethod
-    def __init__(self, type, repo, **config):
+    def __init__(self, type, name, repo, **config):
         """
+        :param type: string name of the type of plugin this is.
         :param repo: string name of the repo this source will use.
         :param config: a dict containing the config for this instance
                        of the plugin.
         """
-        super(Source, self).__init__(type)
+        super(Source, self).__init__(type, name)
         self.repo = repo
 
     @abstractmethod

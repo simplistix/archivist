@@ -1,3 +1,4 @@
+from collections import defaultdict
 from voluptuous import (
     Schema, Required, MultipleInvalid, Length, All, Any, Extra
 )
@@ -68,7 +69,7 @@ default_repo_config = dict(
 
 default_notifications_config = dict(
     type='pipe',
-    value='stderr'
+    name='stderr'
 )
 
 
@@ -107,13 +108,17 @@ class Config(object):
     @staticmethod
     def normalise_plugin_config(data):
         """
-        Turn {'foo': 'bar'} into {'type': 'foo', 'value': 'bar'}
+        Turn ``{'foo': 'bar'}`` into ``{'type': 'foo', 'name': 'bar'}``
+        and ``{'type': 'foo', 'value': 'bar'}`` into
+        ``{'type': 'foo', 'value': 'bar', 'name': None}``
         """
         for values in data.values():
             for index, value in enumerate(values):
                 if len(value) == 1:
                     key, value = value.items()[0]
-                    values[index] = dict(type=key, value=value)
+                    values[index] = value = dict(type=key, name=value)
+                if 'name' not in value:
+                    value['name'] = None
         return data
 
     @staticmethod
@@ -135,7 +140,21 @@ class Config(object):
                         config
                     )
                 config['repo'] = default_repo_config['name']
-        return data
+
+    @staticmethod
+    def check_source_names(data):
+        seen = defaultdict(set)
+        for source in data['sources']:
+            name = source.get('name')
+            type_ = source['type']
+            if name in seen[type_]:
+                raise ConfigError(
+                    'more than one source of type {!r} named {!r}'.format(
+                        type_, name
+                    ),
+                    source
+                )
+            seen[type_].add(name)
 
     @classmethod
     def parse(cls, source):
@@ -146,7 +165,8 @@ class Config(object):
         raw = yaml.load(source)
         data = cls.check_schema(raw)
         data = cls.normalise_plugin_config(data)
-        data = cls.check_source_repos(data)
+        cls.check_source_repos(data)
+        cls.check_source_names(data)
         return data
 
     @staticmethod
