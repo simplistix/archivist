@@ -1,4 +1,5 @@
 from collections import defaultdict
+from inspect import getargspec
 from voluptuous import (
     Schema, Required, MultipleInvalid, Length, All, Any, Extra
 )
@@ -60,10 +61,11 @@ class ConfigError(Exception):
             ))
         return '\n'.join(output)
 
+default_config_name = getargspec(Repo.__init__).keywords
 
 default_repo_config = dict(
     type='git',
-    name='config',
+    name=default_config_name,
     path='/var/archivist'
 )
 

@@ -46,7 +46,7 @@ class Plugin(object):
         """
 
     @abstractmethod
-    def __init__(self, type, name, **config):
+    def __init__(self, type, name=None, **config):
         """
         :param type: string name of the type of plugin this is.
         :param name: string name of this plugin, which may be ``None``.
@@ -81,7 +81,8 @@ class Repo(Plugin):
 class Source(Plugin):
 
     @abstractmethod
-    def __init__(self, type, name, repo, **config):
+    def __init__(self, type, name=None, repo='config',
+                 **config):
         """
         :param type: string name of the type of plugin this is.
         :param repo: string name of the repo this source will use.
