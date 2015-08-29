@@ -18,8 +18,8 @@ class TestPathSource(TestCase):
         self.assertTrue(issubclass(Plugin, Source))
 
     def test_schema_ok(self):
-        compare(dict(type='path', values=['/foo', '/bar']),
-                Plugin.schema(dict(type='path', values=['/foo', '/bar'])))
+        compare(dict(type='paths', values=['/foo', '/bar']),
+                Plugin.schema(dict(type='paths', values=['/foo', '/bar'])))
 
     def test_schema_wrong_type(self):
         text = "not a valid value for dictionary value @ data['type']"
@@ -28,28 +28,28 @@ class TestPathSource(TestCase):
 
     def test_schema_extra_keys(self):
         with ShouldFailSchemaWith("extra keys not allowed @ data['foo']"):
-            Plugin.schema(dict(type='path', foo='bar'))
+            Plugin.schema(dict(type='paths', foo='bar'))
 
     def test_name_supplied(self):
         text = "not a valid value for dictionary value @ data['name']"
         with ShouldFailSchemaWith(text):
-            Plugin.schema(dict(type='path', name='foo'))
+            Plugin.schema(dict(type='paths', name='foo'))
 
     def test_no_paths(self):
         text = "length of value must be at least 1 for dictionary value " \
                "@ data['values']"
         with ShouldFailSchemaWith(text):
-            Plugin.schema(dict(type='path', values=[]))
+            Plugin.schema(dict(type='paths', values=[]))
 
     def test_path_not_string(self):
         text = "invalid list value @ data['values'][0]"
         with ShouldFailSchemaWith(text):
-            Plugin.schema(dict(type='path', values=[1]))
+            Plugin.schema(dict(type='paths', values=[1]))
 
     def test_path_not_starting_with_slash(self):
         text = "invalid list value @ data['values'][0]"
         with ShouldFailSchemaWith(text):
-            Plugin.schema(dict(type='path', values=['foo']))
+            Plugin.schema(dict(type='paths', values=['foo']))
 
     def test_interface(self):
         plugin = Plugin('source', name=None, repo='config',
