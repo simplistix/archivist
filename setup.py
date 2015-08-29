@@ -49,5 +49,8 @@ setup(
     entry_points = {
         'console_scripts': [
             'archivist = archivist.main:main',
-    ]}
+        ],
+        'archivist.source': [
+            'paths = archivist.sources.paths:Plugin',
+        ]}
 )
