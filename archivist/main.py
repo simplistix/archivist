@@ -8,7 +8,7 @@ def parse_command_line():
     parser = ArgumentParser()
     parser.add_argument('config',
                         help='Absolute path to the yaml config file',
-                        default=default_repo_config['path']+'/config.yaml',
+                        default=default_repo_config['path'] + '/config.yaml',
                         type=FileType('r'),
                         nargs='?')
     args = parser.parse_args()
