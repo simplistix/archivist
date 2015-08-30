@@ -8,6 +8,7 @@ from stat import (
 from stat import S_IWUSR
 
 from voluptuous import Schema, All, Length, Invalid
+from archivist.helpers import ensure_dir_exists
 from archivist.plugins import Source
 
 def absolute_path(value):
@@ -44,11 +45,6 @@ class Plugin(Source):
         )
 
     @staticmethod
-    def makedir(directory):
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-    @staticmethod
     def read_contents_file(contents_path):
         contents = {}
         if os.path.exists(contents_path):
@@ -60,7 +56,7 @@ class Plugin(Source):
 
     @staticmethod
     def write_contents_file(contents, contents_path):
-        Plugin.makedir(os.path.split(contents_path)[0])
+        ensure_dir_exists(os.path.split(contents_path)[0])
         with open(contents_path, 'w') as contents_file:
             owner_width = 0
             group_width = 0
@@ -93,7 +89,7 @@ class Plugin(Source):
         full_target, split_path = self.relative_path(source_path, target_path)
         directory = os.sep.join(split_path[:-1])
 
-        self.makedir(directory)
+        ensure_dir_exists(directory)
 
         with open(source_path, 'rb') as source:
             with open(full_target, 'wb') as target:
