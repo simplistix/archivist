@@ -34,7 +34,6 @@ setup(
     include_package_data=True,
     install_requires=[
         'pyyaml',
-        'dulwich'
         'voluptuous',
     ],
     extras_require=dict(
@@ -49,6 +48,9 @@ setup(
     entry_points = {
         'console_scripts': [
             'archivist = archivist.main:main',
+        ],
+        'archivist.repo': [
+            'git = archivist.repos.git:Plugin',
         ],
         'archivist.source': [
             'paths = archivist.sources.paths:Plugin',
