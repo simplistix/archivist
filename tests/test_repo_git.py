@@ -3,6 +3,7 @@ from unittest import TestCase
 from testfixtures import TempDirectory, compare, LogCapture, test_datetime, \
     Replacer
 from voluptuous import Schema
+from archivist.config import default_repo_config
 from archivist.helpers import run
 from archivist.plugins import Source
 from archivist.repos.git import Plugin as GitRepo
@@ -190,5 +191,8 @@ class PluginWithTempDirTests(TestCase):
             repo_path=origin_path
         )
 
+    def test_default_repo_config(self):
+        # can't test actions due to default path
+        GitRepo(**GitRepo.schema(default_repo_config))
 
 
