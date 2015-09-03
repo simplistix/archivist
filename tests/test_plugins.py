@@ -94,3 +94,15 @@ class TestPluginLoading(TestCase):
         compare(plugin2, plugins.get('notification', 'bar'))
         compare(plugin3, plugins.get('repo', 'baz'))
         compare(plugin4, plugins.get('source', 'foo'))
+
+    def test_plugin_names(self):
+        # check setup.py is as expected!
+        plugins = Plugins.load()
+        actual = []
+        for type, stuff in sorted(plugins.plugins.items()):
+            for name in sorted(stuff):
+                actual.append((type, name))
+        compare([
+            ('repo', 'git'),
+            ('source', 'paths')
+        ],actual)
