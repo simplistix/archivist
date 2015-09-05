@@ -1,8 +1,10 @@
 from argparse import ArgumentParser, FileType
+import logging
 
 from .config import Config, ConfigError, default_repo_config
 from .plugins import Plugins
 
+logger = logging.getLogger(__name__)
 
 def parse_command_line():
     parser = ArgumentParser()
@@ -26,6 +28,42 @@ class HandleKnownExceptions(object):
             raise SystemExit(1)
 
 
+class SafeNotifications(object):
+
+    def __init__(self, notifiers):
+        self.notifiers = notifiers
+        self.active = []
+
+    def __enter__(self):
+
+        for notifier in self.notifiers:
+            try:
+                notifier.start()
+            except:
+                if self.active:
+                    logger.exception('error starting %r', notifier.name)
+                else:
+                    raise
+            self.active.append(notifier)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+
+        if exc_type:
+            logger.exception('unexpected error:')
+
+        while self.active:
+            notifier = self.active.pop()
+            try:
+                notifier.finish()
+            except:
+                if self.active:
+                    logger.exception('error stoping %r', notifier.name)
+                else:
+                    raise
+
+        return True
+
+
 def main():
 
     plugins = Plugins.load()
@@ -36,10 +74,7 @@ def main():
 
         config = Config.load(args.config, plugins)
 
-        for notification in config.notifications:
-            notification.start()
-
-        try:
+        with SafeNotifications(config.notifications):
 
             for source in config.sources:
                 repo = config.repo_for(source)
@@ -48,7 +83,3 @@ def main():
 
             for repo in config.repos.values():
                 repo.actions()
-
-        finally:
-            for notification in reversed(config.notifications):
-                notification.finish()

@@ -1,14 +1,18 @@
+from logging import getLogger
 from unittest import TestCase
 
 from mock import Mock, call
 from testfixtures import (
-    Replacer, tempdir, compare, ShouldRaise, OutputCapture, TempDirectory
+    Replacer, tempdir, compare, ShouldRaise, OutputCapture, TempDirectory,
+    LogCapture
 )
 from voluptuous import Schema
 from voluptuous import ALLOW_EXTRA
 
 from archivist.config import ConfigError
-from archivist.main import parse_command_line, HandleKnownExceptions, main
+from archivist.main import (
+    parse_command_line, HandleKnownExceptions, main, SafeNotifications
+)
 from archivist.plugins import Repo, Source, Notifier
 
 
@@ -62,6 +66,94 @@ class TestHandleKnownExceptions(TestCase):
                     raise ValueError('foo')
         # when the exception isn't caught, nothing should be printed
         output.compare('')
+
+
+class DummyNotifier(object):
+
+    def __init__(self, name, logger, bad_start=False, bad_finish=False):
+        self.name = name
+        self.logger = logger
+        self.bad_start = bad_start
+        self.bad_finish = bad_finish
+
+    def start(self):
+        if self.bad_start:
+            raise Exception('start-'+self.name)
+        self.logger.info('start-'+self.name)
+
+    def finish(self):
+        if self.bad_finish:
+            raise Exception('finish-'+self.name)
+        self.logger.info('finish-'+self.name)
+
+
+class TestSafeNotifications(TestCase):
+
+    def setUp(self):
+        self.capture = LogCapture()
+        self.addCleanup(self.capture.uninstall)
+        self.logger = getLogger()
+
+    def test_okay(self):
+        with SafeNotifications([
+            DummyNotifier('one', self.logger),
+            DummyNotifier('two', self.logger),
+        ]):
+            self.logger.info('payload')
+
+        self.capture.check(
+            ('root', 'INFO', 'start-one'),
+            ('root', 'INFO', 'start-two'),
+            ('root', 'INFO', 'payload'),
+            ('root', 'INFO', 'finish-two'),
+            ('root', 'INFO', 'finish-one'),
+        )
+
+    def test_exception(self):
+        with SafeNotifications([DummyNotifier('one', self.logger)]):
+            raise Exception('Boom!')
+
+        self.capture.check(
+            ('root', 'INFO', 'start-one'),
+            ('archivist.main', 'ERROR', 'unexpected error:'),
+            ('root', 'INFO', 'finish-one'),
+        )
+
+    def test_notification_start_fail(self):
+        with SafeNotifications([
+            DummyNotifier('one', self.logger),
+            DummyNotifier('two', self.logger, bad_start=True),
+        ]):
+            self.logger.info('payload')
+
+    def test_notification_finish_failed(self):
+        with SafeNotifications([
+            DummyNotifier('one', self.logger),
+            DummyNotifier('two', self.logger, bad_finish=True),
+        ]):
+            self.logger.info('payload')
+
+    def test_notification_start_none_setup(self):
+        with ShouldRaise(Exception('start-one')):
+            with SafeNotifications([
+                DummyNotifier('one', self.logger, bad_start=True)
+            ]):
+                self.logger.info('payload')
+
+        self.capture.check() # no logging!
+
+    def test_notification_start_none_finished(self):
+        with ShouldRaise(Exception('finish-one')):
+            with SafeNotifications([
+                DummyNotifier('one', self.logger, bad_finish=True)
+            ]):
+                self.logger.info('payload')
+
+        self.capture.check(
+            ('root', 'INFO', 'start-one'),
+            ('root', 'INFO', 'payload'),
+        )
+
 
 
 class TestMain(TestCase):
