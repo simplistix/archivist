@@ -103,6 +103,7 @@ class TestPluginLoading(TestCase):
             for name in sorted(stuff):
                 actual.append((type, name))
         compare([
+            ('notification', 'stream'),
             ('repo', 'git'),
             ('source', 'paths')
         ],actual)

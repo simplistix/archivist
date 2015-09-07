@@ -70,7 +70,7 @@ default_repo_config = dict(
 )
 
 default_notifications_config = dict(
-    type='pipe',
+    type='stream',
     name='stderr'
 )
 

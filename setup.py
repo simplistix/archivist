@@ -54,5 +54,8 @@ setup(
         ],
         'archivist.source': [
             'paths = archivist.sources.paths:Plugin',
-        ]}
+        ],
+        'archivist.notification': [
+            'stream = archivist.notifications.stream:Plugin',
+        ]},
 )
