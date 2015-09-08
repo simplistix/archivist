@@ -50,6 +50,7 @@ setup(
             'git = archivist.repos.git:Plugin',
         ],
         'archivist.source': [
+            'crontab = archivist.sources.crontab:Plugin',
             'packages = archivist.sources.packages:Plugin',
             'paths = archivist.sources.paths:Plugin',
         ],
