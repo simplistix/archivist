@@ -36,7 +36,9 @@ class Plugin(Repo):
         parts = [self.path, source.type]
         if source.name:
             parts.append(source.name)
-        return os.path.join(*parts)
+        full_path = os.path.join(*parts)
+        ensure_dir_exists(full_path)
+        return full_path
 
     def run_git(self, *args):
         return run((self.git, )+args, cwd=self.path)

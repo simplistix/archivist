@@ -27,27 +27,6 @@ class PluginTests(TestCase):
                 GitRepo.schema(dict(type='git', name='config', path='/foo',
                                     git='svn', commit=False, push=True)))
 
-    def get_dummy_source(self, name):
-        class DummySource(Source):
-            schema = Schema({})
-            def __init__(self, type, name, repo):
-                super(DummySource, self).__init__(type, name, repo)
-            def process(self, path):
-                pass
-        return DummySource('dummy', name, 'repo')
-
-    def test_path_for_with_name(self):
-        compare('/foo/dummy/the_name',
-                make_git_repo(path='/foo').path_for(
-                    self.get_dummy_source('the_name')
-                ))
-
-    def test_path_for_no_name(self):
-        compare('/foo/dummy',
-                make_git_repo(path='/foo').path_for(
-                    self.get_dummy_source(name=None)
-                ))
-
 
 class PluginWithTempDirTests(TestCase):
 
@@ -89,6 +68,29 @@ class PluginWithTempDirTests(TestCase):
     def check_git_log(self, lines, repo_path=None):
         compare('\n'.join(lines)+'\n',
                 self.git('log --pretty=format:%s --stat', repo_path))
+
+    def get_dummy_source(self, name):
+        class DummySource(Source):
+            schema = Schema({})
+            def __init__(self, type, name, repo):
+                super(DummySource, self).__init__(type, name, repo)
+            def process(self, path):
+                pass
+        return DummySource('dummy', name, 'repo')
+
+    def test_path_for_with_name(self):
+        compare(self.dir.getpath('dummy/the_name'),
+                make_git_repo(path=self.dir.path).path_for(
+                    self.get_dummy_source('the_name')
+                ))
+        self.assertTrue(os.path.exists(self.dir.getpath('dummy/the_name')))
+
+    def test_path_for_no_name(self):
+        compare(self.dir.getpath('dummy'),
+                make_git_repo(path=self.dir.path).path_for(
+                    self.get_dummy_source(name=None)
+                ))
+        self.assertTrue(os.path.exists(self.dir.getpath('dummy')))
 
     def test_not_there(self):
         repo_path = self.dir.getpath('var')

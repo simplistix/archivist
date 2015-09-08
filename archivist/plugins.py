@@ -66,6 +66,7 @@ class Repo(Plugin):
 
         :return: An absolute path to a directory where sources can write.
                  This does not need to be empty and may be temporary.
+                 It must, however, exist and be writeable.
         """
 
     @abstractmethod
