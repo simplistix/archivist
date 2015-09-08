@@ -105,5 +105,6 @@ class TestPluginLoading(TestCase):
         compare([
             ('notification', 'stream'),
             ('repo', 'git'),
-            ('source', 'paths')
+            ('source', 'packages'),
+            ('source', 'paths'),
         ],actual)
