@@ -1,19 +1,12 @@
 from unittest import TestCase
-from testfixtures import Replacer, TempDirectory, compare
-from testfixtures.popen import MockPopen
+
+from testfixtures import compare
+
 from archivist.sources.packages import Plugin
-from tests.helpers import ShouldFailSchemaWith
+from tests.helpers import ShouldFailSchemaWith, SingleCommandMixin
 
 
-class TestPackages(TestCase):
-
-    def setUp(self):
-        self.dir = TempDirectory()
-        self.addCleanup(self.dir.cleanup)
-        self.Popen = MockPopen()
-        r = Replacer()
-        r.replace('archivist.helpers.Popen', self.Popen)
-        self.addCleanup(r.restore)
+class TestPackages(SingleCommandMixin, TestCase):
 
     def test_rpm(self):
         self.Popen.set_command('rpm -qa', stdout=b'some packages')

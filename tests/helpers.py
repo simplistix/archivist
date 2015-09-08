@@ -1,4 +1,5 @@
-from testfixtures import ShouldRaise, compare
+from testfixtures import ShouldRaise, compare, TempDirectory, Replacer
+from testfixtures.popen import MockPopen
 from voluptuous import MultipleInvalid
 
 
@@ -12,3 +13,14 @@ class ShouldFailSchemaWith(ShouldRaise):
         super(ShouldFailSchemaWith, self).__exit__(exc_type, exc_val, exc_tb)
         compare(self.message, str(self.raised))
         return True
+
+
+class SingleCommandMixin:
+
+    def setUp(self):
+        self.dir = TempDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.Popen = MockPopen()
+        r = Replacer()
+        r.replace('archivist.helpers.Popen', self.Popen)
+        self.addCleanup(r.restore)
