@@ -80,7 +80,6 @@ class Repo(Plugin):
 
 class Source(Plugin):
 
-    @abstractmethod
     def __init__(self, type, name=None, repo='config',
                  **config):
         """
