@@ -111,6 +111,7 @@ one:
 ''',
             '''\
 at ['one'], extra keys not allowed:
+one:
 - two
 
 at root, required key not provided, 'sources':
@@ -133,8 +134,13 @@ repos:
 """,
             '''\
 at ['repos'], expected a list:
-name: config
-type: git
+notifications:
+- some: thing
+repos:
+  name: config
+  type: git
+sources:
+- some: thing
 ''')
 
     def test_invalid_repo(self):
@@ -150,8 +156,8 @@ repos:
 """,
             '''\
 at ['repos', 0], invalid list value:
-- foo
-- bar
+- - foo
+  - bar
 ''')
 
     def test_repo_defaults(self):
@@ -196,8 +202,10 @@ sources: []
 """,
             '''\
 at ['sources'], length of value must be at least 1:
-[]
-''')
+notifications:
+- some: thing
+sources: []
+ ''')
 
     def test_invalid_sources(self):
         self.check_config_error(
@@ -209,7 +217,10 @@ sources:
 """,
             '''\
 at ['sources'], expected a list:
-foo: bar
+notifications:
+- some: thing
+sources:
+  foo: bar
 ''')
 
     def test_invalid_source(self):
@@ -224,7 +235,7 @@ sources:
 """,
             '''\
 at ['sources', 0], invalid list value:
-[]
+- []
 ''')
 
     def test_multi_line_source_no_type(self):
@@ -355,7 +366,10 @@ notifications:
 """,
             '''\
 at ['notifications'], expected a list:
-foo: bar
+notifications:
+  foo: bar
+sources:
+- some: thing
 ''')
 
     def test_invalid_notification(self):
@@ -371,8 +385,8 @@ notifications:
 """,
             '''\
 at ['notifications', 0], invalid list value:
-- x
-- y
+- - x
+  - y
 ''')
 
     def test_default_notifications(self):
@@ -426,9 +440,35 @@ type: foo
             config=dict(repos=[dict(type='foo', foo='bar')]),
             plugins=plugins,
             expected="""\
-at ['foo'], expected int:
-bar
-...
+at ['repos', 0, 'foo'], expected int:
+foo: bar
+type: foo
+"""
+        )
+
+    def test_plugin_instantiation_exception(self):
+        class DummyPlugin(Repo):
+            schema = Schema({}, extra=ALLOW_EXTRA)
+        plugins = Plugins()
+        plugins.register('repo', 'foo', DummyPlugin)
+        with ShouldRaise (TypeError(
+                "Can't instantiate abstract class DummyPlugin "
+                "with abstract methods __init__, actions, path_for"
+        )):
+            Config.realise(dict(repos=[dict(type='foo')]),
+                           plugins)
+
+    def test_missing_required_key(self):
+        class DummyPlugin(Repo):
+            schema = Schema({Required('type'): str, Required('foo'): int})
+        plugins = Plugins()
+        plugins.register('repo', 'foo', DummyPlugin)
+        self.check_config_error(
+            config=dict(repos=[dict(type='foo')]),
+            plugins=plugins,
+            expected="""\
+at ['repos', 0], required key not provided, 'foo':
+type: foo
 """
         )
 

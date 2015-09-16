@@ -9,28 +9,26 @@ from archivist.plugins import Repo, Notifier, Source
 
 class ConfigError(Exception):
 
-    def __init__(self, errors, config):
+    def __init__(self, errors, config, path=None):
         self.errors = errors
         self.config = config
+        self.path = path
 
     def resolve_path(self, error):
         resolved = []
         unresolved = list(error.path)
-        config = self.config
+        config = context_config = self.config
         while unresolved:
             element = unresolved[0]
             try:
+                context_config = config
                 config = config[element]
             except (IndexError, KeyError):
                 break
             else:
                 resolved.append(element)
                 unresolved.pop(0)
-        return resolved, config, unresolved
-
-    @staticmethod
-    def format_path(path):
-        return repr(path) if path else 'root'
+        return resolved, context_config, unresolved
 
     @staticmethod
     def sort_key(e):
@@ -40,10 +38,11 @@ class ConfigError(Exception):
         for error in sorted(self.errors, key=self.sort_key):
 
             path, config, unresolved = self.resolve_path(error)
-
-            parts = ['at '+self.format_path(path), error.message]
+            if self.path is not None:
+                path = self.path + path
+            parts = ['at ' + (repr(path) if path else 'root'), error.message]
             if unresolved:
-                parts.append(self.format_path(unresolved[0]))
+                parts.append(repr(unresolved[0]))
             message = ', '.join(parts)
 
             yield message, config
@@ -101,11 +100,11 @@ class Config(object):
         self.notifications = []
 
     @staticmethod
-    def check_schema(raw, schema=schema):
+    def check_schema(raw, schema=schema, path=None):
         try:
             return schema(raw)
         except MultipleInvalid as e:
-            raise ConfigError(e.errors, raw)
+            raise ConfigError(e.errors, raw, path)
 
     @staticmethod
     def normalise_plugin_config(data):
@@ -210,14 +209,21 @@ class Config(object):
                 ('notifications', Notifier)
         ):
             plugin_type = plugin_type_p[:-1]
-            for plugin_config in config_data[plugin_type_p]:
+
+            for plugin_index, plugin_config in enumerate(
+                    config_data[plugin_type_p]
+            ):
+
+                config_path = [plugin_type_p, plugin_index]
+
                 plugin_name = plugin_config['type']
 
                 plugin_class = cls.load_plugin(plugins,
                                                plugin_type, plugin_name,
                                                plugin_config, plugin_abc)
-
-                cls.check_schema(plugin_config, plugin_class.schema)
+                plugin_config = cls.check_schema(plugin_config,
+                                                 plugin_class.schema,
+                                                 config_path)
 
                 plugin = plugin_class(**plugin_config)
                 store = getattr(config, plugin_type_p)
