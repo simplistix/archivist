@@ -56,17 +56,17 @@ class Plugin(Repo):
             logger.info('changes found in git repo at %s:\n%s',
                         self.path, status)
 
-        # commit if specified
-        if self.commit and status:
-            self.run_git('add', '.')
-            self.run_git('commit', '-m',
-                         datetime.now().strftime(
-                             "Recorded by archivist at %Y-%m-%d %H:%M"
-                         ))
-            logger.info('changes committed')
+            # commit if specified
+            if self.commit:
+                self.run_git('add', '.')
+                self.run_git('commit', '-m',
+                             datetime.now().strftime(
+                                 "Recorded by archivist at %Y-%m-%d %H:%M"
+                             ))
+                logger.info('changes committed')
 
-        # push if specified
-        if self.push:
-            self.run_git('push', '-q')
-            logger.info('changes pushed')
+            # push if specified
+            if self.push:
+                self.run_git('push', '-q')
+                logger.info('changes pushed')
 

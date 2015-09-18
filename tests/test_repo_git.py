@@ -193,6 +193,11 @@ class PluginWithTempDirTests(TestCase):
             repo_path=origin_path
         )
 
+    def test_push_no_changes(self):
+        self.git('init')
+        log = self.run_actions(commit=True, push=True)
+        log.check() # no logging
+
     def test_default_repo_config(self):
         # can't test actions due to default path
         GitRepo(**GitRepo.schema(default_repo_config))
