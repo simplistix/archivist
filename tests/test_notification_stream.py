@@ -24,8 +24,7 @@ class PluginTests(TestCase):
         return output
 
     def test_schema_minimal(self):
-        compare(dict(type='stream', name='stdout', level=INFO,
-                     fmt=None, datefmt=None),
+        compare(dict(type='stream', name='stdout'),
                 Plugin.schema(dict(type='stream', name='stdout')))
 
     def test_schema_maximal(self):
@@ -45,8 +44,7 @@ class PluginTests(TestCase):
             Plugin.schema(dict(type='stream', name='stdfoo'))
 
     def test_schema_integer_level(self):
-        compare(dict(type='stream', name='stdout', level=0,
-                     fmt=None, datefmt=None),
+        compare(dict(type='stream', name='stdout', level=0),
                 Plugin.schema(dict(type='stream', name='stdout', level=0)))
 
     def test_schema_invalid_string_level(self):

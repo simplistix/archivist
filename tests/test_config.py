@@ -516,7 +516,9 @@ type: foo
         class DummyNotifier(Notifier):
             schema = Schema({}, extra=ALLOW_EXTRA)
             def __init__(self, type, name, z):
-                super(DummyNotifier, self).__init__(type, name)
+                super(DummyNotifier, self).__init__(
+                    type, name, level=0, fmt='f', datefmt='d'
+                )
                 self.z = z
             def start(self):
                 pass
@@ -539,7 +541,11 @@ type: foo
                 config.repos)
         compare([C(DummySource, y=2, type='bar', repo='po', name=None)],
                 config.sources)
-        compare([C(DummyNotifier, z=3, type='baz', name=None)],
+        compare([C(DummyNotifier,
+                   type='baz', name=None,
+                   level=0, fmt='f', datefmt='d',
+                   z=3,
+                   )],
                 config.notifications)
 
 
@@ -566,7 +572,8 @@ class TestLoad(WithTempDir, TestCase):
         class DummyEmail(Notifier):
             schema = Schema({}, extra=ALLOW_EXTRA)
             def __init__(self, type, name):
-                super(DummyEmail, self).__init__(type, name)
+                super(DummyEmail, self).__init__(type, name,
+                                                 level=0, fmt='f', datefmt='d')
             def start(self):
                 pass
             def finish(self):
@@ -595,7 +602,9 @@ notifications:
               sources=[C(DummyPath,
                          type='path', repo='config', name='/some/path')],
               notifications=[
-                  C(DummyEmail, type='email', name='test@example.com')
+                  C(DummyEmail,
+                    type='email', name='test@example.com',
+                    level=0, fmt='f', datefmt='d')
               ]),
             config
         )

@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import defaultdict
+import logging
 from pkg_resources import iter_entry_points
+from voluptuous import Invalid
 
 
 class Plugins(object):
@@ -102,16 +104,49 @@ class Source(Plugin):
         """
 
 
+logger = logging.getLogger()
+
+
+def log_level(value):
+    try:
+        return int(value)
+    except ValueError:
+        level = getattr(logging, value.upper(), None)
+        if level is None:
+            raise Invalid('no log level named %r' % value)
+        return level
+
+
 class Notifier(Plugin):
 
+    handler = None
+    """
+    This attribute should be a :class:`logging.Handler` instance
+    that will be used to handle logging from other plugins.
+
+    It should be set up in :meth:`__init__`.
+    """
+
     @abstractmethod
+    def __init__(self, type, name, level, fmt, datefmt):
+        super(Notifier, self).__init__(type, name)
+        self.level = level
+        self.fmt = fmt
+        self.datefmt = datefmt
+
     def start(self):
         """
         Install necessary log handlers.
         """
+        if self.fmt or self.datefmt:
+            self.handler.setFormatter(logging.Formatter(self.fmt, self.datefmt))
+        self.handler.setLevel(self.level)
+        logger.setLevel(self.level)
+        logger.addHandler(self.handler)
 
-    @abstractmethod
     def finish(self):
         """
         Do any clean up or finalisation needed for the notifications.
         """
+        self.handler.close()
+        logger.removeHandler(self.handler)

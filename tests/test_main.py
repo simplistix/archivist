@@ -210,8 +210,16 @@ sources:
   repo: r2
 
 notifications:
-- test: t1
-- test: t2
+- type: test
+  name: t1
+  level: 0
+  fmt: f
+  datefmt: d
+- type: test
+  name: t2
+  level: 0
+  fmt: f
+  datefmt: d
 ''')
             with Replacer() as r:
                 r.replace('sys.argv', ['x', path])
@@ -223,8 +231,10 @@ notifications:
             call.TestRepo(type='test', name='r2'),
             call.TestS1(repo='r1', type='test1', name=None),
             call.TestS2(repo='r2', type='test2', name=None),
-            call.TestNotifier(type='test', name='t1'),
-            call.TestNotifier(type='test', name='t2'),
+            call.TestNotifier(type='test', name='t1',
+                              fmt='f', datefmt='d', level=0),
+            call.TestNotifier(type='test', name='t2',
+                              fmt='f', datefmt='d', level=0),
             call.TestNotifier.start('t1'),
             call.TestNotifier.start('t2'),
             call.TestRepo.r1.path_for('TestS1'),
