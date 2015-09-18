@@ -18,8 +18,11 @@ class TestPathSource(TestCase):
         self.assertTrue(issubclass(Plugin, Source))
 
     def test_schema_ok(self):
-        compare(dict(type='paths', values=['/foo', '/bar']),
-                Plugin.schema(dict(type='paths', values=['/foo', '/bar'])))
+        compare(
+            dict(type='paths', values=['/foo', '/bar'], repo='config'),
+            Plugin.schema(
+                dict(type='paths', values=['/foo', '/bar'], repo='config')
+            ))
 
     def test_schema_wrong_type(self):
         text = "not a valid value for dictionary value @ data['type']"

@@ -19,7 +19,7 @@ def absolute_path(value):
 
 class Plugin(Source):
 
-    schema = Schema(dict(type='paths', name=None,
+    schema = Schema(dict(type='paths', name=None, repo=str,
                          values=All([All(str, absolute_path)],
                                     Length(min=1))))
 
