@@ -599,3 +599,30 @@ notifications:
               ]),
             config
         )
+
+    def test_defaults_instantiate(self):
+        plugins = Plugins.load()
+
+        git = plugins.get('repo', 'git')
+        paths = plugins.get('source', 'paths')
+        stream = plugins.get('notification', 'stream')
+
+        source = open(self.dir.write('test.yaml', """
+sources:
+- paths:
+  - /etc/ssh_config
+"""))
+        config = Config.load(source, plugins)
+        compare(
+            C(Config,
+              repos=dict(config=C(git, strict=False, **default_repo_config)),
+              sources=[C(paths, type='paths', repo='config', name=None,
+                         source_paths=['/etc/ssh_config'])],
+              notifications=[
+                  C(stream, strict=False, **default_notifications_config)
+              ]),
+            config
+        )
+
+
+
