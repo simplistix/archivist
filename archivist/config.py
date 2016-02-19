@@ -122,9 +122,9 @@ class Config(object):
                     key, value = value.items()[0]
                     values[index] = new_value = dict(type=key)
                     if isinstance(value, str):
-                        new_value['name']=value
+                        new_value['name'] = value
                     else:
-                        new_value['values']=value
+                        new_value['values'] = value
                     value = new_value
                 if 'name' not in value:
                     value['name'] = None
