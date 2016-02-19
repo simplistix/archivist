@@ -55,6 +55,7 @@ setup(
             'paths = archivist.sources.paths:Plugin',
         ],
         'archivist.notification': [
+            'email = archivist.notifications.email:Plugin',
             'stream = archivist.notifications.stream:Plugin',
         ]},
 )
