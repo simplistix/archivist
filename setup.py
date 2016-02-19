@@ -1,5 +1,5 @@
 # See license.txt for license details.
-# Copyright (c) 2015 Simplistix Ltd
+# Copyright (c) 2015 Simplistix Ltd, 2016 Chris Withers
 
 import os
 
