@@ -1,20 +1,15 @@
-from grp import getgrgid
 import os
-
+from grp import getgrgid
 from pwd import getpwuid
 from stat import (
     S_IRUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH
 )
 from stat import S_IWUSR
 
-from voluptuous import Schema, All, Length, Invalid
-from archivist.helpers import ensure_dir_exists
-from archivist.plugins import Source
+from voluptuous import Schema, All, Length
 
-def absolute_path(value):
-    if not value.startswith('/'):
-        raise Invalid('%r is not an absolute path' % value)
-    return value
+from archivist.helpers import ensure_dir_exists, absolute_path
+from archivist.plugins import Source
 
 
 class Plugin(Source):

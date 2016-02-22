@@ -1,6 +1,8 @@
 import os
 from subprocess import Popen, PIPE
 
+from voluptuous import Invalid
+
 
 def ensure_dir_exists(directory):
     if not os.path.exists(directory):
@@ -36,3 +38,11 @@ def run(command, cwd=None):
         raise CalledProcessError(command, process.returncode,
                                  out, err)
     return out
+
+
+def absolute_path(value):
+    if not os.path.exists(value):
+        raise Invalid('%r does not exist' % value)
+    if not value.startswith('/'):
+        raise Invalid('%r is not an absolute path' % value)
+    return value

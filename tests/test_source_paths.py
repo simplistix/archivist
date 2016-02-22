@@ -14,14 +14,20 @@ from tests.helpers import ShouldFailSchemaWith
 
 class TestPathSource(TestCase):
 
+    def setUp(self):
+        self.dir = TempDirectory()
+        self.addCleanup(self.dir.cleanup)
+
     def test_abc(self):
         self.assertTrue(issubclass(Plugin, Source))
 
     def test_schema_ok(self):
+        p1 = self.dir.write('foo', b'f')
+        p2 = self.dir.write('bar', b'b')
         compare(
-            dict(type='paths', values=['/foo', '/bar'], repo='config'),
+            dict(type='paths', values=[p1, p2], repo='config'),
             Plugin.schema(
-                dict(type='paths', values=['/foo', '/bar'], repo='config')
+                dict(type='paths', values=[p1, p2], repo='config')
             ))
 
     def test_schema_wrong_type(self):
@@ -54,6 +60,11 @@ class TestPathSource(TestCase):
         with ShouldFailSchemaWith(text):
             Plugin.schema(dict(type='paths', values=['foo']))
 
+    def test_path_not_there(self):
+        text = "invalid list value @ data['values'][0]"
+        with ShouldFailSchemaWith(text):
+            Plugin.schema(dict(type='paths', values=[self.dir.getpath('bad')]))
+
     def test_interface(self):
         plugin = Plugin('source', name=None, repo='config',
                         values=['/foo/bar'])
@@ -61,6 +72,7 @@ class TestPathSource(TestCase):
         compare(plugin.name, None)
         compare(plugin.repo, 'config')
         compare(plugin.source_paths, ['/foo/bar'])
+
 
 class TestPathSourceWithTempDir(TestCase):
 
