@@ -74,8 +74,7 @@ class TestPathSource(TestCase):
         compare(plugin.source_paths, ['/foo/bar'])
 
 
-class TestPathSourceWithTempDir(TestCase):
-
+class PathsHelper(object):
     def setUp(self):
         self.dir = TempDirectory()
         self.addCleanup(self.dir.cleanup)
@@ -84,6 +83,19 @@ class TestPathSourceWithTempDir(TestCase):
             usr_entry.pw_name,
             getgrgid(usr_entry.pw_gid).gr_name,
         )
+
+    def write_file(self, path, content, perms=0777, root='source/'):
+        file_path = self.dir.write(root + path, content)
+        os.chmod(file_path, perms)
+        relative_path = file_path[1:]
+        return file_path, relative_path
+
+
+class TestPathSourceWithTempDir(PathsHelper, TestCase):
+
+    def make_plugin(self, *paths):
+        return Plugin('source', None, 'config',
+                      [self.dir.getpath(p) for p in paths])
 
     def test_read_contents_file(self):
         path = self.dir.write('contents.txt', '''\
@@ -113,17 +125,6 @@ rwxr-x--- x      y        /a/c
 rw-r-x--- short  grouuuup /a/d
 r-x-wx--- looong group    /b
 """, self.dir.read(contents_path))
-
-
-    def write_file(self, path, content, perms, root='source/'):
-        file_path = self.dir.write(root + path, content)
-        os.chmod(file_path, perms)
-        relative_path = file_path[1:]
-        return file_path, relative_path
-
-    def make_plugin(self, *paths):
-        return Plugin('source', None, 'config',
-                      [self.dir.getpath(p) for p in paths])
 
     def test_single_file(self):
         file_path, relative_path = self.write_file('afile', 'foo', 0777)
