@@ -51,6 +51,7 @@ setup(
         ],
         'archivist.source': [
             'crontab = archivist.sources.crontab:Plugin',
+            'jenkins = archivist.sources.jenkins:Plugin',
             'packages = archivist.sources.packages:Plugin',
             'paths = archivist.sources.paths:Plugin',
         ],
