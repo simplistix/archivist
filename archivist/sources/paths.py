@@ -72,7 +72,6 @@ class Plugin(Source):
                     path = absolute_path,
                     ))
 
-
     def relative_path(self, source_path, target_path):
         split_path = (target_path.split(os.sep) + source_path.split(os.sep)[1:])
         full_target = os.sep.join(split_path)
