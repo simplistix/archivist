@@ -2,3 +2,4 @@
 /*.egg-info
 /include
 /lib
+.coverage*
