@@ -12,7 +12,7 @@ install:
   - "pip install -Ue .[test,build]"
 
 # command to run tests, e.g. python setup.py test
-script: nosetests --with-cov --cov=archivist
+script: coverage run `which nosetests`
 
 after_success:
   - coveralls
