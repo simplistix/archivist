@@ -38,7 +38,8 @@ setup(
             'testfixtures',
             'nose',
             'nose-cov',
-            'mock'
+            'mock',
+            'coveralls'
             ],
         build=['sphinx', 'pkginfo', 'setuptools-git', 'twine', 'wheel']
     ),
