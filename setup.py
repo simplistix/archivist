@@ -39,7 +39,8 @@ setup(
             'nose',
             'nose-cov',
             'mock',
-            'coveralls'
+            'coveralls',
+            'mailinglogger',
             ],
         build=['sphinx', 'pkginfo', 'setuptools-git', 'twine', 'wheel']
     ),
