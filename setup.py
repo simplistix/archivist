@@ -14,7 +14,7 @@ setup(
     author_email='chris@simplistix.co.uk',
     license='MIT',
     description=(
-        "A plugable tool for comparing configuration with a known "
+        "A plugable tool for comparing actual configuration with an expected "
         "configuration stored in a source control system."
     ),
     #long_description=open(os.path.join(base_dir,'docs','description.rst')).read(),
