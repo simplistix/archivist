@@ -616,17 +616,18 @@ notifications:
         paths = plugins.get('source', 'paths')
         stream = plugins.get('notification', 'stream')
 
+        file_path = self.dir.write('test.conf', 'conf content')
         source = open(self.dir.write('test.yaml', """
 sources:
 - paths:
-  - /etc/ssh_config
-"""))
+  - {}
+""".format(file_path)))
         config = Config.load(source, plugins)
         compare(
             C(Config,
               repos=dict(config=C(git, strict=False, **default_repo_config)),
               sources=[C(paths, type='paths', repo='config', name=None,
-                         source_paths=['/etc/ssh_config'])],
+                         source_paths=[file_path])],
               notifications=[
                   C(stream, strict=False, **default_notifications_config)
               ]),
