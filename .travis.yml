@@ -9,6 +9,7 @@ python:
 install:
   - git config --global user.email "test@example.com"
   - git config --global user.name "Test User"
+  - git config --global push.default simple
   - "pip install -Ue .[test,build]"
 
 # command to run tests, e.g. python setup.py test
