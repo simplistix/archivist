@@ -31,8 +31,8 @@ class CalledProcessError(Exception):
             "{stderr}\n".format(**self.__dict__))
 
 
-def run(command, cwd=None):
-    process = Popen(command, stdout=PIPE, stderr=PIPE, cwd=cwd)
+def run(command, cwd=None, shell=False):
+    process = Popen(command, stdout=PIPE, stderr=PIPE, cwd=cwd, shell=shell)
     out, err = process.communicate()
     if err or process.returncode:
         raise CalledProcessError(command, process.returncode,

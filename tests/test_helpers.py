@@ -58,4 +58,9 @@ stderr:
                                       cwd=somewhere.path)
             compare(result, expected+'\n')
 
+    def test_with_shell(self):
+        with OutputCapture() as output:
+            result = run('echo "hello out there"', shell=True)
+        output.compare('')
+        compare(result, 'hello out there\n')
 
