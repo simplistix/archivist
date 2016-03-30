@@ -6,11 +6,16 @@ from mock import patch, call
 from testfixtures import Comparison as C, LogCapture, compare
 
 from archivist.notifications.email import Plugin
-
+from tests.helpers import ShouldFailSchemaWith
 
 logger = getLogger()
 
 class PluginTests(TestCase):
+
+    def test_bad_log_level(self):
+        text = "no log level named 'wrong' for dictionary value @ data['level']"
+        with ShouldFailSchemaWith(text):
+            Plugin.schema(dict(level='wrong'))
 
     def full_cycle(self, **kw):
         params = dict(type='email', name=None)
