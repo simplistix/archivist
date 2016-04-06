@@ -51,19 +51,27 @@ class TestPathSource(TestCase):
             Plugin.schema(dict(type='paths', values=[]))
 
     def test_path_not_string(self):
-        text = "invalid list value @ data['values'][0]"
+        text = "expected str @ data['values'][0]"
         with ShouldFailSchemaWith(text):
             Plugin.schema(dict(type='paths', values=[1]))
 
     def test_path_not_starting_with_slash(self):
-        text = "invalid list value @ data['values'][0]"
-        with ShouldFailSchemaWith(text):
-            Plugin.schema(dict(type='paths', values=['foo']))
+        text = "'foo' is not an absolute path @ data['values'][0]"
+        try:
+            cwd = os.getcwd()
+            os.chdir(self.dir.path)
+            self.dir.makedir('foo')
+            with ShouldFailSchemaWith(text):
+                Plugin.schema(dict(type='paths', values=['foo']))
+        finally:
+            os.chdir(cwd)
+
 
     def test_path_not_there(self):
-        text = "invalid list value @ data['values'][0]"
+        bad_path = self.dir.getpath('bad')
+        text = "'%s' does not exist @ data['values'][0]" % bad_path
         with ShouldFailSchemaWith(text):
-            Plugin.schema(dict(type='paths', values=[self.dir.getpath('bad')]))
+            Plugin.schema(dict(type='paths', values=[bad_path]))
 
     def test_interface(self):
         plugin = Plugin('source', name=None, repo='config',

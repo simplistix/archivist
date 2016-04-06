@@ -40,7 +40,7 @@ class ConfigError(Exception):
             path, config, unresolved = self.resolve_path(error)
             if self.path is not None:
                 path = self.path + path
-            parts = ['at ' + (repr(path) if path else 'root'), error.message]
+            parts = ['at ' + (repr(path) if path else 'root'), error.msg]
             if unresolved:
                 parts.append(repr(unresolved[0]))
             message = ', '.join(parts)

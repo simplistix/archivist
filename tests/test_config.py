@@ -155,7 +155,7 @@ repos:
   [['foo', 'bar']]
 """,
             '''\
-at ['repos', 0], invalid list value:
+at ['repos', 0], expected a dictionary:
 - - foo
   - bar
 ''')
@@ -234,7 +234,7 @@ sources:
 
 """,
             '''\
-at ['sources', 0], invalid list value:
+at ['sources', 0], expected dict:
 - []
 ''')
 
@@ -384,7 +384,7 @@ notifications:
     - y
 """,
             '''\
-at ['notifications', 0], invalid list value:
+at ['notifications', 0], expected dict:
 - - x
   - y
 ''')
@@ -547,6 +547,10 @@ type: foo
                    z=3,
                    )],
                 config.notifications)
+
+    def test_custom_error_message(self):
+        # XXX
+        pass
 
 
 class TestLoad(WithTempDir, TestCase):
